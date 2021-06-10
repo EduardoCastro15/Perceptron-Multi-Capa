@@ -124,40 +124,32 @@ def dsigmoide(x):
     s = 1/(1+np.exp(-x))
     return s * (1-s)
 
-def Datos_entrenamiento(matriz,x1,xn):
-    xin = matriz[:, x1:xn+1]
-    return xin
-
-def Datos_validacion(matriz,xji,xjn):
-    xjn = matriz[:, xji:xjn+1]
-    return xjn
-
 # Propagama principal
 if "__main__"==__name__:
-    xls = pd.ExcelFile('XOR.xlsx') # leer archivo excel
-    datos = xls.parse('Hoja1') # Hoja de trabajo
-    matrix_data = np.array(datos)
-    
-    # Datos de entrada
-    x_inicio = 0
-    x_n = 1
-    
-    # Datos de entrada validacion
-    xj_inicio = 3
-    xj_n = 4
-    
+    # Carga de los datos
+    datos_cielo = pd.read_csv('cieloRGB.csv') # Leer archivo csv
+    datos_boscoso = pd.read_csv('boscosoRGB.csv') # Leer archivo csv
+    datos_suelo = pd.read_csv('sueloRGB.csv') # Leer archivo csv
+        
     # Crear vector de entradas xi
-    xi = (Datos_entrenamiento(matrix_data, x_inicio, x_n))
-    d = matrix_data[:, x_n+1]
+    c1 = np.array(datos_cielo)
+    c2 = np.array(datos_boscoso)
+    c3 = np.array(datos_suelo)
+
+    d1 = c1[:, 3]
+    d2 = c1[:, 3]
+    d3 = c1[:, 3]
     
     # Vector de validación
-    xj = (Datos_validacion(matrix_data, xj_inicio, xj_n))
+    xj = np.array([[209, 169, 131],
+                   [ 89, 133,  60],
+                   [152, 140, 111]])
     
     # Parametros de la red
     f, c = xi.shape
-    fac_ap = 0.2 #Factor de aprendizaje
-    precision = 0.00000001 #Precision inicial
-    epocas = 10000 #Numero maximo de epocas (1.2e^6)
+    fac_ap = 0.5 #Factor de aprendizaje
+    precision = 0.1 #Precision inicial
+    epocas = 484 #Numero maximo de epocas (1.2e^6) = 484.1145
     epochs = 0 #Contador de epocas utilizadas
     
     # Arquitectura de la red
@@ -172,9 +164,17 @@ if "__main__"==__name__:
     uoc = np.ones((n_ocultas,1),float) # umbral en las neuronas ocultas
     
     # Matriz de pesos sinapticos
-    random.seed(0) # 
-    w_1 = random.rand(n_ocultas,n_entradas)
-    w_2 = random.rand(n_salida,n_ocultas)
+    #random.seed(0)
+    #w_1 = random.rand(n_ocultas,n_entradas)
+    #w_2 = random.rand(n_salida,n_ocultas)
+    w_a = np.array([[-2.89,  22.02, -24.07],
+                    [12.34, -13.82, -16.50],
+                    [ 9.31, -37.61,  -5.19]])
+    w_b = np.array([[ 5.26,  4.66, -0.63],
+                    [-1.08, -4.34, -5.46]])
+    w_c = np.array([[-3.86, -8.90],
+                    [ 6.45, -7.24],
+                    [-9.03,  3.53]])
     
     #Inicializar la red PMC
     red = MLP(xi,d,w_1,w_2,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
