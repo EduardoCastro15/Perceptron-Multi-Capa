@@ -9,8 +9,9 @@ class MLP():
         # Variables de inicialización 
         self.xi = np.transpose(xi)
         self.d = d
-        self.w1 = w_1
-        self.w2 = w_2
+        self.wa = w_a
+        self.wb = w_b
+        self.wc = w_c
         self.us = us
         self.uoc = uoc
         self.precision = precision
@@ -177,9 +178,8 @@ if "__main__"==__name__:
                     [-9.03,  3.53]])
     
     #Inicializar la red PMC
-    red = MLP(xi,d,w_1,w_2,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    red = MLP(xi,d,w_1,w_2,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    epochs,w1_a,w2_a,us_a,uoc_a,E = red.Aprendizaje()
+    red = MLP(xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
+    epochs,wa_a,wb_a,wc_a,us_a,uoc_a,E = red.Aprendizaje()
     
     # graficar el error
     plt.grid()
@@ -192,7 +192,7 @@ if "__main__"==__name__:
     plt.show
     
     # validacion
-    red = MLP(xj,d,w1_a,w2_a,us_a,uoc_a,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
+    red = MLP(xi,d,wa_a,wb_a,wc_a,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
     salidas = red.Operacion()
     print("Salidas: ",salidas)
     print("Epochs: ", epochs)
