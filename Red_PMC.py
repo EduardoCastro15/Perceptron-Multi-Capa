@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class MLP():
     # constructor
-    def __init__(self,xi,d,w_1,w_2,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida):
+    def __init__(self,xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida):
         # Variables de inicialización 
         self.xi = np.transpose(xi)
         self.d = d
@@ -67,7 +67,7 @@ class MLP():
             if self.epochs > self.epocas:
                 break
         # Regresar 
-        return self.epochs,self.w1,self.w2,self.us,self.uoc,Errores
+        return self.epochs,self.wa,self.wb,self.wc,self.us,self.uoc,Errores
                 
     
     def Propagar(self):
