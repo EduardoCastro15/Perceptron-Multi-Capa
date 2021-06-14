@@ -128,18 +128,42 @@ def dsigmoide(x):
 # Propagama principal
 if "__main__"==__name__:
     # Carga de los datos
-    datos_cielo = pd.read_csv('cieloRGB.csv') # Leer archivo csv
-    datos_boscoso = pd.read_csv('boscosoRGB.csv') # Leer archivo csv
-    datos_suelo = pd.read_csv('sueloRGB.csv') # Leer archivo csv
+    # datos_cielo = pd.read_csv('cieloRGB.csv') # Leer archivo csv
+    # datos_boscoso = pd.read_csv('boscosoRGB.csv') # Leer archivo csv
+    # datos_suelo = pd.read_csv('sueloRGB.csv') # Leer archivo csv
         
-    # Crear vector de entradas xi
-    c1 = np.array(datos_cielo)
-    c2 = np.array(datos_boscoso)
-    c3 = np.array(datos_suelo)
+    # # Crear vector de entradas xi
+    # c1 = np.array(datos_cielo)
+    # c2 = np.array(datos_boscoso)
+    # c3 = np.array(datos_suelo)
 
-    d1 = c1[:, 3]
-    d2 = c1[:, 3]
-    d3 = c1[:, 3]
+    # d1 = c1[:, 3]
+    # d2 = c1[:, 3]
+    # d3 = c1[:, 3]
+
+    #Carga de los 3 archivos en uno
+    data = data2 = data3 = ""
+  
+    # Reading data from boscoso
+    with open('boscosoRGB_completo.csv') as fp:
+        data = fp.read()
+    
+    # Reading data from cielo 
+    with open('cieloRGB_completo.csv') as fp:
+        data2 = fp.read()
+        data2 = data2[1:] #Eliminando la primer línea
+    # Reading data from suelo
+    with open('sueloRGB_completo.csv') as fp:
+        data3 = fp.read()
+        data3 = data3[1:] #Eliminando la primer línea
+    # Merging 2 files
+    # To add the data of file2
+    # from next line 
+    data += data2
+    data += data3
+    
+    with open ('rgb_bcs_juntos.csv', 'w') as fp:
+        fp.write(data)
     
     # Vector de validación
     xj = np.array([[209, 169, 131],
@@ -147,53 +171,53 @@ if "__main__"==__name__:
                    [152, 140, 111]])
     
     # Parametros de la red
-    f, c = xi.shape
-    fac_ap = 0.5 #Factor de aprendizaje
-    precision = 0.1 #Precision inicial
-    epocas = 484 #Numero maximo de epocas (1.2e^6) = 484.1145
-    epochs = 0 #Contador de epocas utilizadas
+    # f, c = xi.shape
+    # fac_ap = 0.5 #Factor de aprendizaje
+    # precision = 0.1 #Precision inicial
+    # epocas = 484 #Numero maximo de epocas (1.2e^6) = 484.1145
+    # epochs = 0 #Contador de epocas utilizadas
     
-    # Arquitectura de la red
-    n_entradas = c # Numero de entradas
-    cap_ocultas = 2 # Una capa oculta
-    n_ocultas = 3 # Neuronas en la capa oculta 1
-    n_ocultas2 = 2 # Neuronas en la capa oculta 2
-    n_salida = 1 # Neuronas en la capa de salida
+    # # Arquitectura de la red
+    # n_entradas = c # Numero de entradas
+    # cap_ocultas = 2 # Una capa oculta
+    # n_ocultas = 3 # Neuronas en la capa oculta 1
+    # n_ocultas2 = 2 # Neuronas en la capa oculta 2
+    # n_salida = 1 # Neuronas en la capa de salida
     
-    # Valor de umbral o bia
-    us = 1.0 # umbral en neurona de salida
-    uoc = np.ones((n_ocultas,1),float) # umbral en las neuronas ocultas
+    # # Valor de umbral o bia
+    # us = 1.0 # umbral en neurona de salida
+    # uoc = np.ones((n_ocultas,1),float) # umbral en las neuronas ocultas
     
-    # Matriz de pesos sinapticos
-    #random.seed(0)
-    #w_1 = random.rand(n_ocultas,n_entradas)
-    #w_2 = random.rand(n_salida,n_ocultas)
-    w_a = np.array([[-2.89,  22.02, -24.07],
-                    [12.34, -13.82, -16.50],
-                    [ 9.31, -37.61,  -5.19]])
-    w_b = np.array([[ 5.26,  4.66, -0.63],
-                    [-1.08, -4.34, -5.46]])
-    w_c = np.array([[-3.86, -8.90],
-                    [ 6.45, -7.24],
-                    [-9.03,  3.53]])
+    # # Matriz de pesos sinapticos
+    # #random.seed(0)
+    # #w_1 = random.rand(n_ocultas,n_entradas)
+    # #w_2 = random.rand(n_salida,n_ocultas)
+    # w_a = np.array([[-2.89,  22.02, -24.07],
+    #                 [12.34, -13.82, -16.50],
+    #                 [ 9.31, -37.61,  -5.19]])
+    # w_b = np.array([[ 5.26,  4.66, -0.63],
+    #                 [-1.08, -4.34, -5.46]])
+    # w_c = np.array([[-3.86, -8.90],
+    #                 [ 6.45, -7.24],
+    #                 [-9.03,  3.53]])
     
-    #Inicializar la red PMC
-    red = MLP(xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    epochs,wa_a,wb_a,wc_a,us_a,uoc_a,E = red.Aprendizaje()
+    # #Inicializar la red PMC
+    # red = MLP(xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
+    # epochs,wa_a,wb_a,wc_a,us_a,uoc_a,E = red.Aprendizaje()
     
-    # graficar el error
-    plt.grid()
-    plt.ylabel("Error de la red",fontsize=12)
-    plt.xlabel("Épocas",fontsize=12)
-    plt.title("Perceptrón Multicapa",fontsize=14)
-    x = np.arange(epochs)
-    plt.plot(x,E,'b',label="Error global")
-    plt.legend(loc='upper right')
-    plt.show
+    # # graficar el error
+    # plt.grid()
+    # plt.ylabel("Error de la red",fontsize=12)
+    # plt.xlabel("Épocas",fontsize=12)
+    # plt.title("Perceptrón Multicapa",fontsize=14)
+    # x = np.arange(epochs)
+    # plt.plot(x,E,'b',label="Error global")
+    # plt.legend(loc='upper right')
+    # plt.show
     
-    # validacion
-    red = MLP(xi,d,wa_a,wb_a,wc_a,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    salidas = red.Operacion()
-    print("Salidas: ",salidas)
-    print("Epochs: ", epochs)
+    # # validacion
+    # red = MLP(xi,d,wa_a,wb_a,wc_a,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
+    # salidas = red.Operacion()
+    # print("Salidas: ",salidas)
+    # print("Epochs: ", epochs)
     
