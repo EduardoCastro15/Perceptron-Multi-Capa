@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from numpy import random
 import matplotlib.pyplot as plt
+import csv
 
 class MLP():
     # constructor
@@ -125,35 +126,142 @@ def dsigmoide(x):
     s = 1/(1+np.exp(-x))
     return s * (1-s)
 
-# Propagama principal
+def obtener_vector_validacion_bosque_y_rango01():
+    with open('boscosoRGB_completo.csv',newline='') as fp:
+        data = list(csv.reader(fp))
+        
+        r,g,b = 0,0,0
+        for row in data[1:]:    # Skip the header row and convert first values to integers
+            row[0] = int(row[0])
+            r += row[0]
+            row[0] = float(row[0])
+            row[0] = row[0]/255
+            row[1] = int(row[1])
+            g += row[1]
+            row[1] = float(row[1])
+            row[1] = row[1]/255
+            row[2] = int(row[2])
+            b += row[2]
+            row[2] = float(row[2])
+            row[2] = row[2]/255
+            row[3] = int(row[3])
+        
+        r = r/len(data[1:])
+        g = g/len(data[1:])
+        b = b/len(data[1:])
+        
+        print(f'Vector de validacion Bosque R: {r} G: {g} B: {b}')
+        r = r/255
+        g = g/255
+        b = b/255
+        validation_vector = [r,g,b,2]
+
+        for row in data[1:]:
+            row.extend(validation_vector)
+
+        with open("boscoso_rango01.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(data)
+
+def obtener_vector_validacion_cielo_y_rango01():
+    with open('cieloRGB_completo.csv',newline='') as fp:
+        data = list(csv.reader(fp))
+        
+        r,g,b = 0,0,0
+        for row in data[1:]:    # Skip the header row and convert first values to integers
+            row[0] = int(row[0])
+            r += row[0]
+            row[0] = float(row[0])
+            row[0] = row[0]/255
+            row[1] = int(row[1])
+            g += row[1]
+            row[1] = float(row[1])
+            row[1] = row[1]/255
+            row[2] = int(row[2])
+            b += row[2]
+            row[2] = float(row[2])
+            row[2] = row[2]/255
+            row[3] = int(row[3])
+        
+        r = r/len(data[1:])
+        g = g/len(data[1:])
+        b = b/len(data[1:])
+        
+        print(f'Vector de validacion Cielo R: {r} G: {g} B: {b}')
+        r = r/255
+        g = g/255
+        b = b/255
+        validation_vector = [r,g,b,1]
+
+        for row in data[1:]:
+            row.extend(validation_vector)
+
+        with open("cielo_rango01.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(data)      
+
+
+
+def obtener_vector_validacion_suelo_y_rango01():
+    with open('sueloRGB_completo.csv',newline='') as fp:
+        data = list(csv.reader(fp))
+        
+        r,g,b = 0,0,0
+        for row in data[1:]:    # Skip the header row and convert first values to integers
+            row[0] = int(row[0])
+            r += row[0]
+            row[0] = float(row[0])
+            row[0] = row[0]/255
+            row[1] = int(row[1])
+            g += row[1]
+            row[1] = float(row[1])
+            row[1] = row[1]/255
+            row[2] = int(row[2])
+            b += row[2]
+            row[2] = float(row[2])
+            row[2] = row[2]/255
+            row[3] = int(row[3])
+        
+        r = r/len(data[1:])
+        g = g/len(data[1:])
+        b = b/len(data[1:])
+        
+        print(f'Vector de validacion suelo R: {r} G: {g} B: {b}')
+        r = r/255
+        g = g/255
+        b = b/255
+        validation_vector = [r,g,b,3]
+
+        for row in data[1:]:
+            row.extend(validation_vector)
+
+        with open("suelo_rango01.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(data)      
+
+    
+    
+
+# Programa principal
 if "__main__"==__name__:
     # Carga de los datos
-    # datos_cielo = pd.read_csv('cieloRGB.csv') # Leer archivo csv
-    # datos_boscoso = pd.read_csv('boscosoRGB.csv') # Leer archivo csv
-    # datos_suelo = pd.read_csv('sueloRGB.csv') # Leer archivo csv
-        
-    # # Crear vector de entradas xi
-    # c1 = np.array(datos_cielo)
-    # c2 = np.array(datos_boscoso)
-    # c3 = np.array(datos_suelo)
-
-    # d1 = c1[:, 3]
-    # d2 = c1[:, 3]
-    # d3 = c1[:, 3]
-
+    obtener_vector_validacion_bosque_y_rango01()
+    obtener_vector_validacion_cielo_y_rango01()
+    obtener_vector_validacion_suelo_y_rango01()
+    
     #Carga de los 3 archivos en uno
     data = data2 = data3 = ""
   
     # Reading data from boscoso
-    with open('boscosoRGB_completo.csv') as fp:
+    with open('boscoso_rango01.csv') as fp:
         data = fp.read()
     
     # Reading data from cielo 
-    with open('cieloRGB_completo.csv') as fp:
+    with open('cielo_rango01.csv') as fp:
         data2 = fp.read()
         data2 = data2[1:] #Eliminando la primer línea
     # Reading data from suelo
-    with open('sueloRGB_completo.csv') as fp:
+    with open('suelo_rango01.csv') as fp:
         data3 = fp.read()
         data3 = data3[1:] #Eliminando la primer línea
     # Merging 2 files
@@ -169,6 +277,7 @@ if "__main__"==__name__:
     xj = np.array([[209, 169, 131],
                    [ 89, 133,  60],
                    [152, 140, 111]])
+    
     
     # Parametros de la red
     # f, c = xi.shape
