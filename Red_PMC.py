@@ -6,7 +6,7 @@ import csv
 
 class MLP():
     # constructor
-    def __init__(self,xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida):
+    def __init__(self,xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_ocultas2,n_entradas,n_salida):
         # Variables de inicialización 
         self.xi = np.transpose(xi)
         self.d = d
@@ -20,6 +20,7 @@ class MLP():
         self.fac_ap = fac_ap
         self.n_entradas = n_entradas
         self.n_ocultas = n_ocultas
+        self.n_ocultas2 = n_ocultas2
         self.n_salida = n_salida
         
         # Variables de aprendizaje
@@ -31,7 +32,9 @@ class MLP():
         self.Error_actual = np.zeros((len(d))) # Errores acumulados en un ciclo de muestras
         self.Entradas = np.zeros((1,n_entradas))
         self.un = np.zeros((n_ocultas,1)) # Potencial de activacion en neuronas ocultas
+        self.un2 = np.zeros((n_ocultas2,1)) # Potencial de activacion en neuronas ocultas2
         self.gu = np.zeros((n_ocultas,1)) # Funcion de activacion de neuronas ocultas
+        self.gu2 = np.zeros((n_ocultas2,1)) # Funcion de activacion de neuronas ocultas
         self.Y = 0.0 # Potencial de activacion en neurona de salida
         self.y = 0.0 # Funcion de activacion en neurona de salida
         self.epochs = 0
@@ -74,14 +77,22 @@ class MLP():
     def Propagar(self):
         # Operaciones en la primer capa
         for a in range(self.n_ocultas):
-            self.un[a,:] = np.dot(self.w1[a,:], self.Entradas) + self.uoc[a,:]
+            self.un[a,:] = np.dot(self.wa[a,:], self.Entradas) + self.uoc[a,:]
         
-        # Calcular la activacion de la neuronas en la capa oculta
+        # Calcular la activacion de la neuronas en la capa oculta 1
         for o in range(self.n_ocultas):
             self.gu[o,:] = tanh(self.un[o,:])
+
+        # Operaciones en la capa oculta 2
+        for a in range(self.n_ocultas2):
+            self.un2[a,:] = np.dot(self.wb[a,:], self.Entradas) + self.uoc[a,:]
         
+        # Calcular la activacion de la neuronas en la capa oculta 2
+        for o in range(self.n_ocultas2):
+            self.gu2[o,:] = tanh(self.un2[o,:])            
+
         # Calcular Y potencial de activacion de la neuronas de salida
-        self.Y = (np.dot(self.w2,self.gu) + self.us)
+        self.Y = (np.dot(self.wc,self.gu2) + self.us)
         # Calcular la salida de la neurona de salida
         self.y = tanh(self.Y)
     
@@ -90,18 +101,25 @@ class MLP():
         self.error_real = (self.di - self.y)
         # Calcular ds
         self.ds = (dtanh(self.Y) * self.error_real)
-        # Ajustar w2
-        self.w2 = self.w2 + (np.transpose(self.gu) * self.fac_ap * self.ds)
+        # Ajustar wc
+        self.wc = self.wc + (np.transpose(self.gu2) * self.fac_ap * self.ds)
         # Ajustar umbral us
         self.us = self.us + (self.fac_ap * self.ds)
         # Calcular docu
-        self.docu = dtanh(self.un) * np.transpose(self.w2) * self.ds
+        print(self.un2)
+        print('wc')
+        print(self.wc)
+        print('wc transposed')
+        print(np.transpose(self.wc))
+        print('ds')
+        print(self.ds)
+        self.docu = dtanh(self.un2) * np.transpose(self.wc) * self.ds
         # Ajustar los pesos w1
-        for j in range(self.n_ocultas):
-            self.w1[j,:] = self.w1[j,:] + ((self.docu[j,:]) * self.Entradas * self.fac_ap)
+        for j in range(self.n_ocultas2):
+            self.wb[j,:] = self.wb[j,:] + ((self.docu[j,:]) * self.Entradas * self.fac_ap)
         
         # Ajustar el umbral en las neuronas ocultas
-        for g in range(self.n_ocultas):
+        for g in range(self.n_ocultas2):
             self.uoc[g,:] = self.uoc[g,:] + (self.fac_ap * self.docu[g,:])
         
     def Error(self):
@@ -239,7 +257,12 @@ def obtener_vector_validacion_suelo_y_rango01():
             writer = csv.writer(f)
             writer.writerows(data)      
 
-    
+def Datos_entrenamiento(matriz,x1,xn):
+    xin = matriz[:,x1:xn+1]
+    return xin
+def Datos_validacion(matriz,xji,xjn):
+    xjn = matriz[:,xji:xjn+1]
+    return xjn
     
 
 # Programa principal
@@ -273,60 +296,63 @@ if "__main__"==__name__:
     with open ('rgb_bcs_juntos.csv', 'w') as fp:
         fp.write(data)
     
+    datos = pd.read_csv('rgb_bcs_juntos.csv',low_memory=False)
+    matrix_data = np.array(datos)
+
+    #Datos de entrada
+    x_inicio = 0
+    x_n = 2
+    #Datos de entrada validación
+    xj_inicio = 4
+    xj_n = 6
+
+    # Crear vector de entradas xi
+    xi = (Datos_entrenamiento(matrix_data,x_inicio,x_n))
+    d = matrix_data[:,x_n+1]
     # Vector de validación
-    xj = np.array([[209, 169, 131],
-                   [ 89, 133,  60],
-                   [152, 140, 111]])
-    
+    xj = (Datos_validacion(matrix_data,xj_inicio,xj_n))
     
     # Parametros de la red
-    # f, c = xi.shape
-    # fac_ap = 0.5 #Factor de aprendizaje
-    # precision = 0.1 #Precision inicial
-    # epocas = 484 #Numero maximo de epocas (1.2e^6) = 484.1145
-    # epochs = 0 #Contador de epocas utilizadas
+    f, c = xi.shape
+    fac_ap = 0.5 #Factor de aprendizaje
+    precision = 0.1 #Precision inicial
+    epocas = 484 #Numero maximo de epocas (1.2e^6) = 484.1145
+    epochs = 0 #Contador de epocas utilizadas
     
     # # Arquitectura de la red
-    # n_entradas = c # Numero de entradas
-    # cap_ocultas = 2 # Una capa oculta
-    # n_ocultas = 3 # Neuronas en la capa oculta 1
-    # n_ocultas2 = 2 # Neuronas en la capa oculta 2
-    # n_salida = 1 # Neuronas en la capa de salida
+    n_entradas = c # Numero de entradas
+    cap_ocultas = 2 # Dos capa oculta
+    n_ocultas = 3 # Neuronas en la capa oculta 1
+    n_ocultas2 = 2 # Neuronas en la capa oculta 2
+    n_salida = 3 # Neuronas en la capa de salida
     
     # # Valor de umbral o bia
-    # us = 1.0 # umbral en neurona de salida
-    # uoc = np.ones((n_ocultas,1),float) # umbral en las neuronas ocultas
+    us = 1.0 # umbral en neurona de salida
+    uoc = np.ones((n_ocultas,1),float) # umbral en las neuronas ocultas
     
     # # Matriz de pesos sinapticos
-    # #random.seed(0)
-    # #w_1 = random.rand(n_ocultas,n_entradas)
-    # #w_2 = random.rand(n_salida,n_ocultas)
-    # w_a = np.array([[-2.89,  22.02, -24.07],
-    #                 [12.34, -13.82, -16.50],
-    #                 [ 9.31, -37.61,  -5.19]])
-    # w_b = np.array([[ 5.26,  4.66, -0.63],
-    #                 [-1.08, -4.34, -5.46]])
-    # w_c = np.array([[-3.86, -8.90],
-    #                 [ 6.45, -7.24],
-    #                 [-9.03,  3.53]])
+    random.seed(0)
+    w_a = random.rand(n_ocultas,n_entradas)
+    w_b = random.rand(n_ocultas2,n_ocultas)
+    w_c = random.rand(n_salida,n_ocultas2)
     
-    # #Inicializar la red PMC
-    # red = MLP(xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    # epochs,wa_a,wb_a,wc_a,us_a,uoc_a,E = red.Aprendizaje()
+    #Inicializar la red PMC
+    red = MLP(xi,d,w_a,w_b,w_c,us,uoc,precision,epocas,fac_ap,n_ocultas,n_ocultas2,n_entradas,n_salida)
+    epochs,wa_a,wb_a,wc_a,us_a,uoc_a,E = red.Aprendizaje()
     
-    # # graficar el error
-    # plt.grid()
-    # plt.ylabel("Error de la red",fontsize=12)
-    # plt.xlabel("Épocas",fontsize=12)
-    # plt.title("Perceptrón Multicapa",fontsize=14)
-    # x = np.arange(epochs)
-    # plt.plot(x,E,'b',label="Error global")
-    # plt.legend(loc='upper right')
-    # plt.show
+    # graficar el error
+    plt.grid()
+    plt.ylabel("Error de la red",fontsize=12)
+    plt.xlabel("Épocas",fontsize=12)
+    plt.title("Perceptrón Multicapa",fontsize=14)
+    x = np.arange(epochs)
+    plt.plot(x,E,'b',label="Error global")
+    plt.legend(loc='upper right')
+    plt.show
     
-    # # validacion
-    # red = MLP(xi,d,wa_a,wb_a,wc_a,us,uoc,precision,epocas,fac_ap,n_ocultas,n_entradas,n_salida)
-    # salidas = red.Operacion()
-    # print("Salidas: ",salidas)
-    # print("Epochs: ", epochs)
+    # validacion
+    red = MLP(xi,d,wa_a,wb_a,wc_a,us,uoc,precision,epocas,fac_ap,n_ocultas,n_ocultas2,n_entradas,n_salida)
+    salidas = red.Operacion()
+    print("Salidas: ",salidas)
+    print("Epochs: ", epochs)
     
