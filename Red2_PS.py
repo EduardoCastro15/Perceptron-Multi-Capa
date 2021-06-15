@@ -103,7 +103,7 @@ class MLP():
         print(f'docu Trans: {(np.transpose(self.docu))}')
         print(f'Entr * fac_ap: {self.Entradas * self.fac_ap}')
         for j in range(self.n_entradas):
-            self.wa[j,:] = self.wa[:,j] + (np.transpose(self.docu) * self.Entradas * self.fac_ap)
+            self.wa[:,j] = self.wa[:,j] + (np.transpose(self.docu) * self.Entradas * self.fac_ap)
         
         # Ajustar el umbral en las neuronas ocultas
         for g in range(self.n_ocultas):
